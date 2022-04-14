@@ -4,6 +4,7 @@ Pitch Hero is a gamified pitch trainer intended to motivate users of all musical
 
 ## Folder Layout
     .
-    └── pitch-hero/
-        ├── public/
-        └── src/
+    ├── pitch-hero/
+    │   ├── public/
+    │   └── src/
+    └── reports/

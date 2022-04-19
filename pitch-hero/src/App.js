@@ -5,10 +5,23 @@ import { useEffect, useState } from "react";
 const BIBBY_SIZE = 20;
 const GAME_WIDTH = 500;
 const GAME_HEIGHT = 500;
+const GRAVITY = 6;
 
-function App() {
+function App() { 
   const [bibbyPosition, setBibbyPosition] = useState(250);
-  useEffect(() => {});
+
+  useEffect(() => {
+    let timeID;
+    if (birdPosition < GAME_HEIGHT - BIRD_SIZE) {
+      timeID = setInterval(() => {
+        setBibbyPosition(birdPosition => birdPosition + GRAVITY);
+      }, 24);
+    }
+
+    return () => {
+      clearInterval(timeId);
+    };
+  });
 
   return (
     <Div>

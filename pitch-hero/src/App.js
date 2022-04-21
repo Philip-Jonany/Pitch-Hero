@@ -1,13 +1,7 @@
 import './App.css';
-import styled from "styled-components";
 import { useEffect, useState } from "react";
 
-const BIBBY_SIZE = 20;
-const GAME_WIDTH = 500;
-const GAME_HEIGHT = 500;
-
 function App() {
-  // TODO make this not const and have the boy move
   const [bibbyPosition, setBibbyPosition] = useState(250);
   useEffect(() => {});
 

@@ -12,14 +12,11 @@ function App() {
 
   useEffect(() => {
     let timeID;
-    if (birdPosition < GAME_HEIGHT - BIRD_SIZE) {
+    if (bibbyPosition < GAME_HEIGHT - BIBBY_SIZE) {
       timeID = setInterval(() => {
-        setBibbyPosition(birdPosition => birdPosition + GRAVITY);
+        setBibbyPosition(bibbyPosition => bibbyPosition + GRAVITY);
       }, 24);
     }
-    return () => {
-      clearInterval(timeId);
-    };
   });
 
   return (
@@ -36,9 +33,9 @@ export default App;
 const Bibby = styled.div`
   position:absolute;
   background-color: red;
-  height: ${(props) => props.size}px;
-  width: ${(props) => props.size}px;
-  top:  ${(props) => props.size}px;
+  height: ${(props:any) => props.size}px;
+  width: ${(props:any) => props.size}px;
+  top:  ${(props:any) => props.size}px;
   border-radius = 50%;
 `;
 
@@ -49,8 +46,8 @@ const Div = styled.div`
 `
 
 const GameBox = styled.div`
-  height:  ${(props) => props.height}px;
-  width: ${(props) => props.width}px;
+  height:  ${(props:any) => props.height}px;
+  width: ${(props:any) => props.width}px;
   background-color: deepskyblue;
 `
 

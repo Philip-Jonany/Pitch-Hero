@@ -2,11 +2,13 @@ export class GameEntity {
   name: string;  
   x: number;
   y: number;
+  id: number;
 
-  constructor(name: string, x: number, y: number) {
+  constructor(name: string, id: number, x: number, y: number) {
     this.name = name;
     this.x = x;
     this.y = y;
+    this.id = id;
   }
 
   setX(x: number) {
@@ -27,8 +29,8 @@ export class GameEntity {
 export class PlayerEntity extends GameEntity {
   getInputFunc: () => number;
 
-  constructor(getInputFunc: () => number) {
-    super("player", 5, 50);
+  constructor(id: number, getInputFunc: () => number) {
+    super("player", id, 5, 50);
     this.getInputFunc = getInputFunc;
   }
 
@@ -53,8 +55,8 @@ export class PipeEntity extends GameEntity {
   gap: number;
   awardedPoints: boolean
 
-  constructor(y: number, width: number, gap: number) {
-    super("pipe", 110, y);
+  constructor(id: number, y: number, width: number, gap: number) {
+    super("pipe", id, 110, y);
     this.width = width;
     this.gap = gap;
     this.awardedPoints = false;
@@ -92,6 +94,4 @@ export class PipeEntity extends GameEntity {
     let bottomLip = this.y - this.gap / 2;
     return x > leftEdge && x < rightEdge && (y > topLip || y < bottomLip);
   }
-
-
 }

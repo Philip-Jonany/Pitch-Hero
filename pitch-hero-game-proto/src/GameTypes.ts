@@ -1,7 +1,9 @@
 export enum GamePhase {
   INIT = "INIT",
   ALIVE = "ALIVE",
-  DEAD = "DEAD"
+  DEAD = "DEAD",
+  PAUSED = "PAUSED",
+  UNPAUSED = "UNPAUSED"
 };
 
 export interface GameInfo {

@@ -8,15 +8,18 @@ interface GameProps {
   width: number,
   height: number,
   input: number,
-  onPhaseChangeCallback(lastPhase: GamePhase, newPhase: GamePhase, info: GameInfo): void
+  requestedPhase: GamePhase | null,    // externally requested state change
+  onPhaseChangeCallback?(lastPhase: GamePhase, newPhase: GamePhase, info: GameInfo): void
 }
 
 interface GameState {
   phase: GamePhase,
   entities: GameEntity[],
+  nextEID: number,
   player: PlayerEntity | null
   sinceLastPipe: number,
-  info: GameInfo
+  info: GameInfo,
+  prePausePhase: GamePhase
 }
 
 class Game extends Component<GameProps, GameState> {
@@ -24,12 +27,15 @@ class Game extends Component<GameProps, GameState> {
 
   constructor(props: any) {
     super(props);
+
     this.state = {
       phase: GamePhase.INIT,
       entities: [],
+      nextEID: 0,
       player: null,
       sinceLastPipe: 0,
-      info: this.initInfo()
+      info: this.initInfo(),
+      prePausePhase: GamePhase.INIT
     }
 
     this.canvas = React.createRef();
@@ -40,6 +46,22 @@ class Game extends Component<GameProps, GameState> {
   }
 
   componentDidUpdate() {
+    if (this.props.requestedPhase !== this.state.phase) {
+      // someone wants us to externally change the game phase, try to do so if possible
+      switch(this.props.requestedPhase) {
+        case GamePhase.INIT:
+          // always allow resetting the game
+          this.transitionPhase(GamePhase.INIT);
+          break;
+        case GamePhase.PAUSED:
+          this.setState({ prePausePhase: this.state.phase });
+          this.transitionPhase(GamePhase.PAUSED);
+          break;
+        case GamePhase.UNPAUSED:
+          this.transitionPhase(GamePhase.UNPAUSED);
+          break;
+      }
+    }
   }
 
   initInfo = () => {
@@ -59,7 +81,7 @@ class Game extends Component<GameProps, GameState> {
     let lastPhase = this.state.phase;
 
     this.setState({ phase: nextPhase }, () => {
-      this.props.onPhaseChangeCallback(lastPhase, this.state.phase, this.state.info);
+      this.props.onPhaseChangeCallback?.(lastPhase, this.state.phase, this.state.info)
     });
   }
 
@@ -68,15 +90,17 @@ class Game extends Component<GameProps, GameState> {
   tickGame = (dt : number) => {
     let player: PlayerEntity;
     let entities: GameEntity[];
+    let EID = this.state.nextEID;
     switch(this.state.phase) {
       case GamePhase.INIT:
         // start updating game on the next frame
-        player = new PlayerEntity(this.getInputFunc);
+        player = new PlayerEntity(EID++, this.getInputFunc);
         entities = [];
         entities.push(player);
 
         this.setState({
           entities: entities,
+          nextEID: EID,
           player: player,
           sinceLastPipe: Infinity,
           info: this.initInfo()
@@ -99,10 +123,9 @@ class Game extends Component<GameProps, GameState> {
         // check to see how long it's been since we spawned a pipe; if it's been 3 seconds, spawn a new pipe
         let sinceLastPipe = this.state.sinceLastPipe;
         if (sinceLastPipe > 3) {
-          this.state.entities.push(new PipeEntity(Math.random() * 60 + 20, 5, 20));
+          this.state.entities.push(new PipeEntity(EID++, Math.random() * 60 + 20, 5, 20));
           sinceLastPipe = 0;
         }
-        this.setState({sinceLastPipe: sinceLastPipe + dt});
 
         // update score for every pipe the player is past the danger zone of and hasn't yet awarded points
         let info = this.state.info;
@@ -114,7 +137,6 @@ class Game extends Component<GameProps, GameState> {
           }
           return e;
         });
-        this.setState({ info: info });
         
         // tick each entity
         this.state.entities.map((e: GameEntity) => {
@@ -124,12 +146,25 @@ class Game extends Component<GameProps, GameState> {
 
         // queue a setstate to update entities, remove any entities that should be dead
         this.setState({
-          entities: this.state.entities.filter((e: GameEntity) => !e.shouldRemove())
+          entities: this.state.entities.filter((e: GameEntity) => !e.shouldRemove()),
+          nextEID: EID,
+          sinceLastPipe: sinceLastPipe + dt,
+          info: info
         });
         break;
 
       case GamePhase.DEAD:
         // sit forever without doing any special ticking, we're dead lol
+        break;
+
+      case GamePhase.PAUSED:
+        // sit forever, unpausing only happens externally
+        break;
+      
+      case GamePhase.UNPAUSED:
+        // we want to unpause, return to whatever the state was beforehand
+        this.transitionPhase(this.state.prePausePhase);
+        this.setState({ prePausePhase: GamePhase.INIT });
         break;
     }
   }
@@ -166,7 +201,7 @@ class Game extends Component<GameProps, GameState> {
         <p>X position: { this.state.player?.x }</p>
         <p>Y position: { this.state.player?.y }</p>
         <p>Score: { this.state.info.score }</p>
-        <button onClick={ this.initGame }>Reset game</button>
+        {/*<button onClick={ this.initGame }>Reset game</button>-->*/}
         <canvas className="gameCanvas" ref={ this.canvas }/>
       </div>
     );

@@ -2,24 +2,21 @@ import React from "react";
 import { Component } from "react";
 import GameTimer from "./GameTimer";
 import { GameEntity, PipeEntity, PlayerEntity } from "./GameEntities";
-
-enum GamePhase {
-  INIT,
-  ALIVE,
-  DEAD
-}
+import { GameInfo, GamePhase } from "./GameTypes";
 
 interface GameProps {
   width: number,
   height: number,
-  input: number
+  input: number,
+  onPhaseChangeCallback(lastPhase: GamePhase, newPhase: GamePhase, info: GameInfo): void
 }
 
 interface GameState {
   phase: GamePhase,
   entities: GameEntity[],
   player: PlayerEntity | null
-  sinceLastPipe: number
+  sinceLastPipe: number,
+  info: GameInfo
 }
 
 class Game extends Component<GameProps, GameState> {
@@ -31,7 +28,8 @@ class Game extends Component<GameProps, GameState> {
       phase: GamePhase.INIT,
       entities: [],
       player: null,
-      sinceLastPipe: 0
+      sinceLastPipe: 0,
+      info: this.initInfo()
     }
 
     this.canvas = React.createRef();
@@ -44,31 +42,24 @@ class Game extends Component<GameProps, GameState> {
   componentDidUpdate() {
   }
 
+  initInfo = () => {
+    return {
+      score: 0
+    };
+  }
+
   getInputFunc = () => this.props.input;
 
   // game startup/reset; run once when game starts up/resets
   initGame = () => {
-    // this.setState({ phase: GamePhase.INIT });
     this.transitionPhase(GamePhase.INIT);
   }
 
   transitionPhase = (nextPhase: GamePhase) => {
-    // todo: also call the relevant callbacks so the rest of the app can know
+    let lastPhase = this.state.phase;
+
     this.setState({ phase: nextPhase }, () => {
-      switch (this.state.phase) {
-        case GamePhase.INIT:
-          console.log("Transition to INIT");
-          // onInitPhase
-          break;
-        case GamePhase.ALIVE:
-          console.log("Transition to ALIVE");
-          // onAlivePhase
-          break;
-        case GamePhase.DEAD:
-          console.log("Transition to DEAD");
-          // onDeadPhase
-          break;
-      }
+      this.props.onPhaseChangeCallback(lastPhase, this.state.phase, this.state.info);
     });
   }
 
@@ -83,13 +74,13 @@ class Game extends Component<GameProps, GameState> {
         player = new PlayerEntity(this.getInputFunc);
         entities = [];
         entities.push(player);
-        entities.push(new PipeEntity(50, 5, 20));
 
         this.setState({
           entities: entities,
           player: player,
-          sinceLastPipe: 0
-        }, () => console.log(this.state));
+          sinceLastPipe: Infinity,
+          info: this.initInfo()
+        });
         this.transitionPhase(GamePhase.ALIVE);
         break;
 
@@ -97,7 +88,9 @@ class Game extends Component<GameProps, GameState> {
         // check to make sure the player hasn't died
         player = this.state.player!;  // player is definitely not null
         entities = this.state.entities;
-        if (this.state.entities.some((e: GameEntity) => e.name === "pipe" && (e as PipeEntity).inDangerZone(player.x, player.y))) {
+        if (this.state.entities.some((e: GameEntity) => e.name === "pipe" 
+                                                        && (e as PipeEntity).inDangerZone(player.x, player.y))
+              || player.y < 0 || player.y > 100) {
           // there's at least one pipe we're in the danger zone of, we died :(
           this.transitionPhase(GamePhase.DEAD);
           break;
@@ -110,6 +103,18 @@ class Game extends Component<GameProps, GameState> {
           sinceLastPipe = 0;
         }
         this.setState({sinceLastPipe: sinceLastPipe + dt});
+
+        // update score for every pipe the player is past the danger zone of and hasn't yet awarded points
+        let info = this.state.info;
+        this.state.entities.filter(e => e.name === "pipe").map(e => {
+          let pipe = e as PipeEntity;
+          if ((pipe.x + pipe.width / 2) < player.x && !pipe.awardedPoints) {
+            info.score++;
+            pipe.awardedPoints = true;
+          }
+          return e;
+        });
+        this.setState({ info: info });
         
         // tick each entity
         this.state.entities.map((e: GameEntity) => {
@@ -117,7 +122,7 @@ class Game extends Component<GameProps, GameState> {
           return e;
         });
 
-        // queue a setstate, and remove any entities that should be dead
+        // queue a setstate to update entities, remove any entities that should be dead
         this.setState({
           entities: this.state.entities.filter((e: GameEntity) => !e.shouldRemove())
         });
@@ -152,7 +157,7 @@ class Game extends Component<GameProps, GameState> {
 
   render() {
     return (
-      <div className="game">
+      <div className="Game">
         <GameTimer
           onTickCallback = { this.tickGame }
           postTickCallback = { this.drawGame }
@@ -160,6 +165,7 @@ class Game extends Component<GameProps, GameState> {
         <p>Game Phase: { this.state.phase }</p>
         <p>X position: { this.state.player?.x }</p>
         <p>Y position: { this.state.player?.y }</p>
+        <p>Score: { this.state.info.score }</p>
         <button onClick={ this.initGame }>Reset game</button>
         <canvas className="gameCanvas" ref={ this.canvas }/>
       </div>

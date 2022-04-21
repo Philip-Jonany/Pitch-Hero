@@ -51,11 +51,13 @@ export class PipeEntity extends GameEntity {
   
   width: number;
   gap: number;
+  awardedPoints: boolean
 
   constructor(y: number, width: number, gap: number) {
     super("pipe", 110, y);
     this.width = width;
     this.gap = gap;
+    this.awardedPoints = false;
   }
 
   tick(dt: number) { 
@@ -90,4 +92,6 @@ export class PipeEntity extends GameEntity {
     let bottomLip = this.y - this.gap / 2;
     return x > leftEdge && x < rightEdge && (y > topLip || y < bottomLip);
   }
+
+
 }

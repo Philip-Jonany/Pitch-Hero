@@ -37,14 +37,13 @@ export class PlayerEntity extends GameEntity {
   }
 
   draw(dt: number, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
-    const rectWidth = 10;
-    const rectHeight = 10;
+    let size = (5 / 100.0) * canvas.height;
     let blockX = (this.x / 100.0) * canvas.width;
     let blockY = (1 - this.y / 100.0) * canvas.height;
 
     ctx.fillStyle = "red";
     ctx.beginPath();
-    ctx.fillRect(blockX - rectWidth / 2, blockY - rectHeight / 2, rectWidth, rectHeight);
+    ctx.fillRect(blockX - size / 2, blockY - size / 2, size, size);
   }
 }
 

@@ -8,43 +8,29 @@ const BIBBY_SIZE = 20;
 const GAME_WIDTH = 500;
 const GAME_HEIGHT = 500;
 const GRAVITY = 6;
-
+const OBSTACLE_WIDTH = 40;
+const OBSTACLE_GAP = 200;
 const audioCtx = AudioContext.getAudioContext();
 const analyserNode = AudioContext.getAnalyser();
 const buflen = 2048;
 var buf = new Float32Array(buflen);
 
-const Bibby = styled.div`
-position:absolute;
-background-color: red;
-height: ${(props:any) => props.size}px;
-width: ${(props:any) => props.size}px;
-top:  ${(props:any) => props.size}px;
-border-radius = 50%;
-`;
 
-const Div = styled.div`
-  display:flex;
-  width:100%;
-  justify-content:center;
-`
-
-const GameBox = styled.div`
-  height:  ${(props:any) => props.height}px;
-  width: ${(props:any) => props.width}px;
-  background-color: deepskyblue;
-`
 
 function App() { 
   const [bibbyPosition, setBibbyPosition] = useState(250);
-
+  const [obstacleHeight, setObstacleHeight] = useState(200);
+  const [obstacleLeft, setObstacleLeft] = useState(GAME_WIDTH - OBSTACLE_WIDTH);
+  const [score, setScore] = useState(0);
   const [source, setSource] = useState<any|null>(null);
   const [started, setStart] = useState(false);
   const [pitchNote, setPitchNote] = useState("C");
   const [pitchScale, setPitchScale] = useState("4");
-  const [pitch, setPitch] = useState("0 Hz");
+  const [pitch, setPitch] = useState(0);
   const [detune, setDetune] = useState("0");
   const [notification, setNotification] = useState(false);
+
+  const bottomObstacleHeight = GAME_HEIGHT - OBSTACLE_GAP - obstacleHeight;
 
   const updatePitch = (time) => {
     analyserNode.getFloatTimeDomainData(buf);
@@ -54,7 +40,8 @@ function App() {
       // let sym = noteStrings[note % 12];
       // let scl = Math.floor(note / 12) - 1;
       // let dtune = centsOffFromPitch(ac, note);
-      setPitch(ac.toFixed(2) + " Hz");
+      setPitch(ac);
+      setBibbyPosition(pitch);
       // setPitchNote(sym);
       // setPitchScale(scl);
       // setDetune(dtune);
@@ -67,13 +54,40 @@ function App() {
     if (source != null) {
       source!.connect(analyserNode);
     }
-    let timeID;
-    if (bibbyPosition < GAME_HEIGHT - BIBBY_SIZE) {
-      timeID = setInterval(() => {
-        setBibbyPosition(bibbyPosition => bibbyPosition + GRAVITY);
+    let timeId;
+    if (started ) {
+
+    // if (started && bibbyPosition < GAME_HEIGHT - BIBBY_SIZE) {
+      timeId = setInterval(() => {
+        setBibbyPosition((bibbyPosition) => pitch);
+        setBibbyPosition((bibbyPosition) => bibbyPosition - GRAVITY);
       }, 24);
     }
-  },[source]);
+    return () => {
+      clearInterval(timeId);
+    };
+  }, [source, started, bibbyPosition]);
+
+  // for obstacles
+  useEffect(() => {
+    let obstacleId;
+    if (started && obstacleLeft >= -OBSTACLE_WIDTH) {
+    // if (started && obstacleLeft >= -OBSTACLE_WIDTH) {
+      obstacleId = setInterval(() => {
+        setObstacleLeft((obstacleLeft) => obstacleLeft - 5);
+      }, 24);
+      return () => {
+        clearInterval(obstacleId);
+      };
+    }
+    else {
+      setObstacleLeft(GAME_WIDTH - OBSTACLE_WIDTH);
+      setObstacleHeight(
+        Math.floor(Math.random() * (GAME_HEIGHT - OBSTACLE_GAP))
+      );
+    }
+  });
+
 
   setInterval(updatePitch, 1);
 
@@ -111,7 +125,6 @@ function App() {
     <Div>
       {!started ? (
           <button
-            
             onClick={start}
           >
             Start
@@ -129,38 +142,60 @@ function App() {
             <span>{pitch}</span>
           </div>
       <GameBox height ={GAME_HEIGHT} width = {GAME_WIDTH}>
+        <Obstacle 
+          top = {0}
+          width = {OBSTACLE_WIDTH} 
+          height={obstacleHeight}
+          left={obstacleLeft}
+        />
+        <Obstacle
+          top={GAME_HEIGHT - (obstacleHeight + bottomObstacleHeight)}
+          width={OBSTACLE_WIDTH}
+          height={bottomObstacleHeight}
+          left={obstacleLeft}
+        />
         <Bibby size = {BIBBY_SIZE} top = {bibbyPosition} />
       </GameBox>
-      
+      <span> {3} </span>
     </Div>
     
   );
 }
 
 export default App;
-// import React from 'react';
-// import logo from './logo.svg';
-// import './App.css';
 
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.tsx</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
+const Bibby = styled.div`
+position:absolute;
+background-color: red;
+height: ${(props:any) => props.size}px;
+width: ${(props:any) => props.size}px;
+top:  ${(props:any) => props.top}px;
+border-radius = 50%;
+`;
 
-// export default App;
+const Div = styled.div`
+  display:flex;
+  width:100%;
+  justify-content:center;
+  & span{
+    color: white;
+    font-size: 24px;
+    position: absolute;
+  }
+`;
+
+const GameBox = styled.div`
+  height:  ${(props:any) => props.height}px;
+  width: ${(props:any) => props.width}px;
+  background-color: deepskyblue;
+  overflow:hidden;
+`;
+
+const Obstacle = styled.div`
+  position: relative;
+  top: ${(props: any) => props.top}px;
+  background-color:green;
+  width: ${(props: any) => props.width}px;
+  height: ${(props: any) => props.height}px;
+  left: ${(props: any) => props.left}px;
+`;

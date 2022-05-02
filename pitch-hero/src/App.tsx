@@ -14,6 +14,27 @@ const analyserNode = AudioContext.getAnalyser();
 const buflen = 2048;
 var buf = new Float32Array(buflen);
 
+const Bibby = styled.div`
+position:absolute;
+background-color: red;
+height: ${(props:any) => props.size}px;
+width: ${(props:any) => props.size}px;
+top:  ${(props:any) => props.size}px;
+border-radius = 50%;
+`;
+
+const Div = styled.div`
+  display:flex;
+  width:100%;
+  justify-content:center;
+`
+
+const GameBox = styled.div`
+  height:  ${(props:any) => props.height}px;
+  width: ${(props:any) => props.width}px;
+  background-color: deepskyblue;
+`
+
 function App() { 
   const [bibbyPosition, setBibbyPosition] = useState(250);
 
@@ -84,26 +105,7 @@ function App() {
     });
   };
 
-  const Bibby = styled.div`
-  position:absolute;
-  background-color: red;
-  height: ${(props:any) => props.size}px;
-  width: ${(props:any) => props.size}px;
-  top:  ${(props:any) => props.size}px;
-  border-radius = 50%;
-`;
 
-const Div = styled.div`
-  display:flex;
-  width:100%;
-  justify-content:center;
-`
-
-const GameBox = styled.div`
-  height:  ${(props:any) => props.height}px;
-  width: ${(props:any) => props.width}px;
-  background-color: deepskyblue;
-`
 
   return (
     <Div>

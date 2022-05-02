@@ -5,8 +5,8 @@ import AudioContext from "./contexts/AudioContext";
 import autoCorrelate from "./libs/AutoCorrelate";
 
 const BIBBY_SIZE = 20;
-const GAME_WIDTH = 500;
-const GAME_HEIGHT = 500;
+const GAME_WIDTH = 1000;
+const GAME_HEIGHT = 1000;
 const GRAVITY = 6;
 
 const audioCtx = AudioContext.getAudioContext();
@@ -21,10 +21,11 @@ function App() {
   const [started, setStart] = useState(false);
   const [pitchNote, setPitchNote] = useState("C");
   const [pitchScale, setPitchScale] = useState("4");
-  const [pitch, setPitch] = useState("0 Hz");
+  const [pitch, setPitch] = useState(0);
   const [detune, setDetune] = useState("0");
   const [notification, setNotification] = useState(false);
 
+  // const update
   const updatePitch = (time) => {
     analyserNode.getFloatTimeDomainData(buf);
     var ac = autoCorrelate(buf, audioCtx.sampleRate);
@@ -33,7 +34,7 @@ function App() {
       // let sym = noteStrings[note % 12];
       // let scl = Math.floor(note / 12) - 1;
       // let dtune = centsOffFromPitch(ac, note);
-      setPitch(ac.toFixed(2) + " Hz");
+      setPitch(ac);
       // setPitchNote(sym);
       // setPitchScale(scl);
       // setDetune(dtune);
@@ -49,6 +50,7 @@ function App() {
     let timeID;
     if (bibbyPosition < GAME_HEIGHT - BIBBY_SIZE) {
       timeID = setInterval(() => {
+        setBibbyPosition(pitch)
         setBibbyPosition(bibbyPosition => bibbyPosition + GRAVITY);
       }, 24);
     }
@@ -84,14 +86,16 @@ function App() {
     });
   };
 
-  const Bibby = styled.div`
-  position:absolute;
-  background-color: red;
-  height: ${(props:any) => props.size}px;
-  width: ${(props:any) => props.size}px;
-  top:  ${(props:any) => props.size}px;
-  border-radius = 50%;
-`;
+;
+
+const Bibby = styled.div`
+position:absolute;
+background-color: red;
+height: ${(props:any) => props.size}px;
+width: ${(props:any) => props.size}px;
+top:  ${(props:any) => props.size}px;
+border-radius = 50%;
+`
 
 const Div = styled.div`
   display:flex;

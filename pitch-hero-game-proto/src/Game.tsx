@@ -3,6 +3,13 @@ import { Component } from "react";
 import GameTimer from "./GameTimer";
 import { GameEntity, PipeEntity, PlayerEntity } from "./GameEntities";
 import { GameInfo, GamePhase } from "./GameTypes";
+import AudioContext from "./contexts/AudioContext";
+import autoCorrelate from "./libs/AutoCorrelate";
+
+const audioCtx = AudioContext.getAudioContext();
+const analyserNode = AudioContext.getAnalyser();
+const buflen = 2048;
+var buf = new Float32Array(buflen);
 
 interface GameProps {
   width: number,

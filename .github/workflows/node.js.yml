@@ -3,6 +3,9 @@
 
 name: Node.js CI
 
+env:
+  CI: ""
+
 on:
   push:
     branches: [ main ]

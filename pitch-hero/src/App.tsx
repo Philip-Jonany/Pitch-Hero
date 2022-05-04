@@ -122,8 +122,6 @@ function App() {
     });
   };
 
-
-
   return (
     <Div>
       {!started ? (

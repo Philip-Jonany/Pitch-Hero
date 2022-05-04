@@ -15,8 +15,6 @@ const analyserNode = AudioContext.getAnalyser();
 const buflen = 2048;
 var buf = new Float32Array(buflen);
 
-
-
 function App() { 
   const [bibbyPosition, setBibbyPosition] = useState(250);
   const [obstacleHeight, setObstacleHeight] = useState(200);

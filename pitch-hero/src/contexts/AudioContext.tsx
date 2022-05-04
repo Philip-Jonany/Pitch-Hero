@@ -1,5 +1,3 @@
-
-
 class AudioContext{
   audioCtx
   analyser

@@ -1,19 +1,20 @@
 import './App.css';
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import AudioContext from "./contexts/AudioContext";
+import AudioContextFunction from "./contexts/AudioContext";
 import autoCorrelate from "./libs/AutoCorrelate";
-
 const BIBBY_SIZE = 20;
 const GAME_WIDTH = 500;
 const GAME_HEIGHT = 500;
 const GRAVITY = 6;
 const OBSTACLE_WIDTH = 40;
 const OBSTACLE_GAP = 200;
+const AudioContext = new AudioContextFunction();
 const audioCtx = AudioContext.getAudioContext();
 const analyserNode = AudioContext.getAnalyser();
 const buflen = 2048;
 var buf = new Float32Array(buflen);
+
 
 function App() { 
   const [bibbyPosition, setBibbyPosition] = useState(250);
@@ -32,6 +33,7 @@ function App() {
 
   const updatePitch = (time) => {
     analyserNode.getFloatTimeDomainData(buf);
+    console.log(buf);
     var ac = autoCorrelate(buf, audioCtx.sampleRate);
     if (ac > -1) {
       // let note = noteFromPitch(ac);
@@ -47,6 +49,8 @@ function App() {
       // console.log(note, sym, scl, dtune, ac);
     }
   };
+
+
 
   useEffect(() => {
     if (source != null) {

@@ -24,11 +24,11 @@ function App() {
   const [score, setScore] = useState(0);
   const [source, setSource] = useState<any|null>(null);
   const [started, setStart] = useState(false);
-  const [pitchNote, setPitchNote] = useState("C");
-  const [pitchScale, setPitchScale] = useState("4");
+  // const [pitchNote, setPitchNote] = useState("C");
+  // const [pitchScale, setPitchScale] = useState("4");
   const [pitch, setPitch] = useState(0);
-  const [detune, setDetune] = useState("0");
-  const [notification, setNotification] = useState(false);
+  // const [detune, setDetune] = useState("0");
+  // const [notification, setNotification] = useState(false);
 
   const bottomObstacleHeight = GAME_HEIGHT - OBSTACLE_GAP - obstacleHeight;
 
@@ -45,7 +45,7 @@ function App() {
       // setPitchNote(sym);
       // setPitchScale(scl);
       // setDetune(dtune);
-      setNotification(false);
+      // setNotification(false);
       // console.log(note, sym, scl, dtune, ac);
     }
   };
@@ -66,7 +66,7 @@ function App() {
     return () => {
       clearInterval(timeId);
     };
-  }, [source, started, bibbyPosition]);
+  }, [source, started, bibbyPosition, pitch]);
 
   // for obstacles
   useEffect(() => {
@@ -86,7 +86,7 @@ function App() {
         Math.floor(Math.random() * (GAME_HEIGHT - OBSTACLE_GAP))
       );
     }
-  });
+  }, [obstacleLeft, setObstacleLeft, started]);
 
 
   setInterval(updatePitch, 1);
@@ -98,8 +98,9 @@ function App() {
       await audioCtx.resume();
     }
     setStart(true);
-    setNotification(true);
-    setTimeout(() => setNotification(false), 5000);
+    setScore(10);
+    // setNotification(true);
+    // setTimeout(() => setNotification(false), 5000);
     setSource(audioCtx!.createMediaStreamSource(input));
   };
 
@@ -156,7 +157,7 @@ function App() {
         />
         <Bibby size = {BIBBY_SIZE} top = {bibbyPosition} />
       </GameBox>
-      <span> {3} </span>
+      <span> {score} </span>
     </Div>
     
   );

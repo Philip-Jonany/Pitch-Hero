@@ -1,7 +1,7 @@
 {
   "name": "pitch-hero",
   "version": "0.1.0",
-  "homepage": "https://Philip-Jonany.github.io/Pitch-Hero",
+  "homepage": "https://Philip-Jonany.github.io/Pitch-Hero/pitch-hero",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",

@@ -36,3 +36,5 @@ jobs:
       working-directory: pitch-hero
     - run: npm test
       working-directory: pitch-hero
+    - run: npm run deploy
+      working-directory: pitch-hero

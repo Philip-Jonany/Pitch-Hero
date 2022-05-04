@@ -1,8 +1,9 @@
 export class GameEntity {
-  name: string;  
+  name: string;
   x: number;
   y: number;
   id: number;
+
 
   constructor(name: string, id: number, x: number, y: number) {
     this.name = name;
@@ -28,13 +29,15 @@ export class GameEntity {
 
 export class PlayerEntity extends GameEntity {
   getInputFunc: () => number;
+  sprite: HTMLImageElement | null;
 
-  constructor(id: number, getInputFunc: () => number) {
+  constructor(id: number, getInputFunc: () => number, sprite: HTMLImageElement | null) {
     super("player", id, 5, 50);
     this.getInputFunc = getInputFunc;
+    this.sprite = sprite;
   }
 
-  tick(dt: number) { 
+  tick(dt: number) {
     this.setY(this.getInputFunc());
   }
 
@@ -43,14 +46,14 @@ export class PlayerEntity extends GameEntity {
     let blockX = (this.x / 100.0) * canvas.width;
     let blockY = (1 - this.y / 100.0) * canvas.height;
 
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.fillRect(blockX - size / 2, blockY - size / 2, size, size);
+    if (this.sprite != null) {
+      ctx.drawImage(this.sprite, blockX - size / 2, blockY - size / 2, size, size);
+    }
   }
 }
 
 export class PipeEntity extends GameEntity {
-  
+
   width: number;
   gap: number;
   awardedPoints: boolean
@@ -62,7 +65,7 @@ export class PipeEntity extends GameEntity {
     this.awardedPoints = false;
   }
 
-  tick(dt: number) { 
+  tick(dt: number) {
     // this.setY(this.getInputFunc());
     this.setX(this.x - dt * 10);
   }

@@ -3,13 +3,7 @@ import { Component } from "react";
 import GameTimer from "./GameTimer";
 import { GameEntity, PipeEntity, PlayerEntity } from "./GameEntities";
 import { GameInfo, GamePhase } from "./GameTypes";
-import AudioContext from "./contexts/AudioContext";
-import autoCorrelate from "./libs/AutoCorrelate";
-
-const audioCtx = AudioContext.getAudioContext();
-const analyserNode = AudioContext.getAnalyser();
-const buflen = 2048;
-var buf = new Float32Array(buflen);
+import { Console } from "console";
 
 interface GameProps {
   width: number,
@@ -26,7 +20,8 @@ interface GameState {
   player: PlayerEntity | null
   sinceLastPipe: number,
   info: GameInfo,
-  prePausePhase: GamePhase
+  prePausePhase: GamePhase,
+  playerSprite: HTMLImageElement | null;
 }
 
 class Game extends Component<GameProps, GameState> {
@@ -42,14 +37,26 @@ class Game extends Component<GameProps, GameState> {
       player: null,
       sinceLastPipe: 0,
       info: this.initInfo(),
-      prePausePhase: GamePhase.INIT
+      prePausePhase: GamePhase.INIT,
+      playerSprite: null
     }
 
     this.canvas = React.createRef();
   }
 
   componentDidMount() {
-    this.initGame()
+    this.fetchAndSaveImages()
+  }
+
+  fetchAndSaveImages() {
+    let pSprite: HTMLImageElement = new Image();
+    pSprite.onload = () => {
+      this.setState({
+        playerSprite: pSprite
+      })
+      this.initGame() // start the game after the player sprite is loaded
+    }
+    pSprite.src = "./Trumpetv3.png";
   }
 
   componentDidUpdate() {
@@ -101,7 +108,7 @@ class Game extends Component<GameProps, GameState> {
     switch(this.state.phase) {
       case GamePhase.INIT:
         // start updating game on the next frame
-        player = new PlayerEntity(EID++, this.getInputFunc);
+        player = new PlayerEntity(EID++, this.getInputFunc, this.state.playerSprite);
         entities = [];
         entities.push(player);
 
@@ -119,14 +126,14 @@ class Game extends Component<GameProps, GameState> {
         // check to make sure the player hasn't died
         player = this.state.player!;  // player is definitely not null
         entities = this.state.entities;
-        if (this.state.entities.some((e: GameEntity) => e.name === "pipe" 
+        if (this.state.entities.some((e: GameEntity) => e.name === "pipe"
                                                         && (e as PipeEntity).inDangerZone(player.x, player.y))
               || player.y < 0 || player.y > 100) {
           // there's at least one pipe we're in the danger zone of, we died :(
           this.transitionPhase(GamePhase.DEAD);
           break;
         }
-        
+
         // check to see how long it's been since we spawned a pipe; if it's been 3 seconds, spawn a new pipe
         let sinceLastPipe = this.state.sinceLastPipe;
         if (sinceLastPipe > 3) {
@@ -144,7 +151,7 @@ class Game extends Component<GameProps, GameState> {
           }
           return e;
         });
-        
+
         // tick each entity
         this.state.entities.map((e: GameEntity) => {
           e.tick(dt);
@@ -167,7 +174,7 @@ class Game extends Component<GameProps, GameState> {
       case GamePhase.PAUSED:
         // sit forever, unpausing only happens externally
         break;
-      
+
       case GamePhase.UNPAUSED:
         // we want to unpause, return to whatever the state was beforehand
         this.transitionPhase(this.state.prePausePhase);
@@ -184,7 +191,7 @@ class Game extends Component<GameProps, GameState> {
     if (canvas && ctx) {
       canvas.width = this.props.width;
       canvas.height = this.props.height;
-  
+
       // background
       ctx.fillStyle = "blue";
       ctx.beginPath();

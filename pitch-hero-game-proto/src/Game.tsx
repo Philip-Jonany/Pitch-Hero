@@ -142,8 +142,15 @@ class Game extends Component<GameProps, GameState> {
         // check to make sure the player hasn't died
         player = this.state.player!;  // player is definitely not null
         entities = this.state.entities;
+
+        let canvas = this.canvas.current;
+        if (canvas) {
+          canvas.width = this.props.width;
+          canvas.height = this.props.height;
+        }
+
         if (this.state.entities.some((e: GameEntity) => e.name === "pipe"
-                                                        && (e as PipeEntity).inDangerZone(player.x, player.y))
+                                                        && (e as PipeEntity).inDangerZone(player.x, player.y, canvas!))
               || player.y < 0 || player.y > 100) {
           // there's at least one pipe we're in the danger zone of, we died :(
           this.transitionPhase(GamePhase.DEAD);

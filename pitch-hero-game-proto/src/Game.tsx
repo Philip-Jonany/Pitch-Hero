@@ -49,8 +49,8 @@ class Game extends Component<GameProps, GameState> {
       info: this.initInfo(),
       prePausePhase: GamePhase.INIT,
       playerSprite: null,
-      // highScore1: cookies.get('highScore1') || "",
-      // highScore2: cookies.get('highScore2') || "",
+      // highScore1: cookies.get('highScore1') || ""
+      // highScore2: cookies.get('highScore2') || ""
       // highScore3: cookies.get('highScore3') || ""
       highScore1: "",
       highScore2: "",

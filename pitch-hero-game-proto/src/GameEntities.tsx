@@ -90,11 +90,11 @@ export class PipeEntity extends GameEntity {
     return this.x < -10;
   }
 
-  inDangerZone(x: number, y: number): boolean {
+  inDangerZone(x: number, y: number, canvas: HTMLCanvasElement): boolean {
     let leftEdge = this.x - this.width / 2;
     let rightEdge = this.x + this.width / 2;
     let topLip = this.y + this.gap / 2;
     let bottomLip = this.y - this.gap / 2;
-    return x > leftEdge && x < rightEdge && (y > topLip || y < bottomLip);
+    return x > leftEdge && x < rightEdge && (y + 2 > topLip || y - 2 < bottomLip);
   }
 }

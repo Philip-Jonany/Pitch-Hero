@@ -3,6 +3,8 @@ import { Component } from "react";
 import GameTimer from "./GameTimer";
 import { GameEntity, PipeEntity, PlayerEntity } from "./GameEntities";
 import { GameInfo, GamePhase } from "./GameTypes";
+import {withCookies, Cookies} from "react-cookie";
+import { instanceOf } from "prop-types";
 import { Console } from "console";
 
 interface GameProps {
@@ -22,13 +24,21 @@ interface GameState {
   info: GameInfo,
   prePausePhase: GamePhase,
   playerSprite: HTMLImageElement | null;
+  highScore1: string
+  highScore2: string
+  highScore3: string
 }
 
 class Game extends Component<GameProps, GameState> {
   canvas: React.RefObject<HTMLCanvasElement>;
+  // static propTypes = {
+  //   cookies: instanceOf(Cookies).isRequired
+  // };
 
   constructor(props: any) {
     super(props);
+
+    const cookies : Cookies  = props;
 
     this.state = {
       phase: GamePhase.INIT,
@@ -38,7 +48,13 @@ class Game extends Component<GameProps, GameState> {
       sinceLastPipe: 0,
       info: this.initInfo(),
       prePausePhase: GamePhase.INIT,
-      playerSprite: null
+      playerSprite: null,
+      // highScore1: cookies.get('highScore1') || "",
+      // highScore2: cookies.get('highScore2') || "",
+      // highScore3: cookies.get('highScore3') || ""
+      highScore1: "",
+      highScore2: "",
+      highScore3: ""
     }
 
     this.canvas = React.createRef();
@@ -131,6 +147,8 @@ class Game extends Component<GameProps, GameState> {
               || player.y < 0 || player.y > 100) {
           // there's at least one pipe we're in the danger zone of, we died :(
           this.transitionPhase(GamePhase.DEAD);
+          // checks whether new high score and adds it if it is
+          //this.handleCookie(this.state.info.score)
           break;
         }
 
@@ -203,6 +221,34 @@ class Game extends Component<GameProps, GameState> {
       });
     }
   }
+
+  //called whenever you die and updates high scores if applicable
+  handleCookie = (score:number) => {
+    const { cookies }: any = this.props;
+    const hs1String: string = cookies.get("highScore1");
+    const hs2String: string = cookies.get("highScore2");
+    const hs3String: string = cookies.get("highScore3");
+    const hs1Elem: any = hs1String.split(",");
+    const hs2Elem: any = hs2String.split(",");
+    const hs3Elem: any = hs3String.split(",");
+    const hs1: number = hs1Elem[1];
+    const hs2: number = hs2Elem[1];
+    const hs3: number = hs3Elem[1];
+    if (score > hs3) {
+      const newHighScore: string = "Player's Name (XXX)" + " - " + score
+      if (score > hs2) {
+        cookies.set("highScore3", hs2, {});
+        if (score > hs1) {
+          cookies.set("highScore2", hs1, {});
+          cookies.set("highScore1", newHighScore, {});
+        } else {
+          cookies.set("highScore2", newHighScore, {});
+        }
+      } else {
+        cookies.set("highScore3", newHighScore, {});
+      }
+    }
+  };
 
   render() {
     return (

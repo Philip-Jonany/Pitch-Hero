@@ -4,6 +4,7 @@ import Game from "./Game";
 import { GameInfo, GamePhase } from './GameTypes';
 import AudioContext from "./contexts/AudioContext";
 import autoCorrelate from "./libs/AutoCorrelate";
+import { maxHeaderSize } from 'http';
 
 interface GameAppProps {
   onInit?(): void,
@@ -14,6 +15,7 @@ function GameApp(props: GameAppProps) {
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth * 0.8);
   const [canvasHeight, setCanvasHeight] = useState(250);
   const [pitch, setPitch] = useState(50);
+  const [position, setPosition] = useState(100);
 
   const [currentPhase, setCurrentPhase] = useState(GamePhase.INIT);
   // const [pauseInfo, setPauseInfo] = useState<{paused: boolean, previous: GamePhase}>({ paused: false, previous: GamePhase.INIT});
@@ -36,14 +38,29 @@ function GameApp(props: GameAppProps) {
       // let sym = noteStrings[note % 12];
       // let scl = Math.floor(note / 12) - 1;
       // let dtune = centsOffFromPitch(ac, note);
-      setPitch(ac - 100);
+      // setPitch(ac - 100);
       // setPitchNote(sym);
       // setPitchScale(scl);
       // setDetune(dtune);
       // setNotification(false);
       // console.log(note, sym, scl, dtune, ac);
+      updatePosition(ac, 100, 400, 100);
     }
   };
+
+  // Updates the position of Bibby (to be passed to Game) based on a given input frequency. Takes
+  // in min and max frequencies where input frequencies outside of this range will simply be
+  // mapped to the top and bottom positions. Scales frequencies within the range to span the whole
+  // height.
+  const updatePosition = (freq: number, minFreq: number, maxFreq: number, height: number) => {
+    let pos: number = (freq - minFreq) / (maxFreq - minFreq) * height;  // scale freq within range
+    if (pos < 0) {  // keep pos within box if going out of bounds
+      pos = 0;
+    } else if (pos > height) {
+      pos = height
+    }
+    setPosition(pos);
+  }
 
   setInterval(updatePitch, 1);
 
@@ -148,7 +165,7 @@ function GameApp(props: GameAppProps) {
         <Game 
         width={ canvasWidth }
         height={ canvasHeight }
-        input={ pitch }
+        input={ position }
         requestedPhase={ requestedPhase }
         onPhaseChangeCallback={ onPhaseChanged }
       />

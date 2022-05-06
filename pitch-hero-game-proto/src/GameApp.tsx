@@ -6,6 +6,10 @@ import AudioContext from "./contexts/AudioContext";
 import autoCorrelate from "./libs/AutoCorrelate";
 import { maxHeaderSize } from 'http';
 
+// TypeScript throws a fit if you try to import so a workaround is to set
+// this 'pitch-analyser' as a const.
+const PitchAnalyser = require('pitch-analyser');
+
 interface GameAppProps {
   onInit?(): void,
   onDeath?(info: GameInfo): void
@@ -29,6 +33,56 @@ function GameApp(props: GameAppProps) {
   // const onInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   setGameInput(parseInt(e.target.value));
   // }
+
+  // <---
+  // // Analyser options
+  // // callback lets us control payload (I think?)
+  // const analyserOptions = {
+  //   callback: analyserCallback,
+  //   returnNote: true,
+  //   returnCents: true,
+  //   decimals: 2,
+  // };
+  //
+  // // Initialize the analyser.
+  // const analyser = new PitchAnalyser(analyserOptions);
+  //
+  // // What to do with the audio payload once callback passes it here from WebAudio
+  // function analyserCallback(payload: { note: any; frequency: any; cents: any; }) {
+  //   updateNote(payload.note);
+  //   updateFrequency(payload.frequency);
+  //   updateCents(payload.cents);
+  // }
+  //
+  // // Update note
+  // //    - May be helpful for debugging. During actual gameplay it doesn't really
+  // //      matter as the player can use use the height of the gaps to gauge how to sing
+  // //      their pitch; note should not be shown to user.
+  // function updateNote(note) {
+  //   // TBD
+  // }
+  //
+  // // Update the frequency
+  // function updateFrequency(frequency) {
+  //   // TBD
+  // }
+  //
+  // // Update cents (# of degrees that the sound is off pitch)
+  // function updateCents(cents) {
+  //   // TBD
+  // }
+
+  /*
+      Pitch TODO's:
+          - Get/update elements from page/WebAudio
+          - Fill in the update methods
+          - Error handling?
+          - A way to initialize the analyser (either button or starts immediately upon
+              GamePhase.INIT)
+          - Sync audio with GamePhase (i.e. analyser should not process audio when game is paused
+              or when game ends. When game is unpaused, analyser should process audio without missing
+              a beat)
+   */
 
   const updatePitch = (time: any) => {
     analyserNode.getFloatTimeDomainData(buf);
